@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Happy Birthday 💛</title>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<style>
+:root{
+  --bg: linear-gradient(to top, #ffcc33, #fff6cc);
+  --card: rgba(255,255,255,0.88);
+  --accent: #f4b400;
+  --text:#3b2f00;
+}
+
+*{ -webkit-tap-highlight-color: transparent; }
+
+body{
+  margin:0;
+  font-family:Poppins,system-ui;
+  background:var(--bg);
+  color:var(--text);
+  overflow:hidden;
+}
+
+/* 🌅 SUNRISE */
+.sunrise{
+  position:fixed;
+  bottom:-160px;
+  left:50%;
+  transform:translateX(-50%);
+  width:300px;
+  height:300px;
+  background:radial-gradient(circle,#fff6a3,#ffb300);
+  border-radius:50%;
+  filter:blur(2px);
+  animation:sunrise 8s ease-in-out forwards;
+  z-index:-1;
+}
+@keyframes sunrise{ to{ bottom:40%; } }
+
+/* SCREENS */
+.screen{
+  position:absolute;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  padding:20px;
+}
+.screen.active{display:flex}
+
+.card{
+  background:var(--card);
+  padding:28px;
+  border-radius:28px;
+  max-width:460px;
+  width:100%;
+  text-align:center;
+  box-shadow:0 25px 60px rgba(0,0,0,.18);
+}
+
+h2,h3{ color:#d18b00; }
+
+button{
+  padding:14px 30px;
+  border:none;
+  border-radius:40px;
+  background:linear-gradient(135deg,#ffd84d,#f4b400);
+  color:#3b2f00;
+  font-size:16px;
+  cursor:pointer;
+  margin-top:18px;
+  box-shadow:0 10px 25px rgba(244,180,0,.4);
+}
+
+.country{
+  margin:12px 0;
+  padding:15px 20px;
+  border-radius:30px;
+  background:#fff1b8;
+  cursor:pointer;
+  font-weight:500;
+}
+
+/* CANDLE */
+.candle{
+  width:90px;height:150px;
+  background:linear-gradient(#ffe680,#ffc933);
+  border-radius:18px;
+  position:relative;
+  margin:22px auto;
+}
+.flame{
+  width:22px;height:34px;
+  background:radial-gradient(circle,#fff,#ff9800);
+  border-radius:50%;
+  position:absolute;
+  top:-34px;
+  left:34px;
+  animation:flicker .15s infinite;
+}
+@keyframes flicker{50%{transform:scale(.85)}}
+.hidden{display:none}
+
+/* PETALS */
+.petal{
+  position:fixed;
+  top:-40px;
+  font-size:26px;
+  animation:fall linear forwards;
+  pointer-events:none;
+}
+@keyframes fall{
+  to{transform:translateY(110vh) rotate(360deg)}
+}
+</style>
+</head>
+
+<body>
+
+<div class="sunrise"></div>
+
+<audio id="bgMusic" loop muted>
+<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_5b7a68a4ad.mp3">
+</audio>
+
+<!-- INTRO -->
+<div class="screen active" id="s1">
+<div class="card">
+<h2>Welcome 🌻</h2>
+<p>A warm sunrise, just for you</p>
+<button onclick="start()">Begin</button>
+</div>
+</div>
+
+<!-- COUNTRY -->
+<div class="screen" id="s2">
+<div class="card">
+<h3>Choose a country 🌍</h3>
+<div class="country" onclick="travel('india')">🇮🇳 India</div>
+<div class="country" onclick="travel('saudi')">🇸🇦 Saudi Arabia</div>
+<div class="country" onclick="travel('japan')">🇯🇵 Japan</div>
+<div class="country" onclick="travel('korea')">🇰🇷 South Korea</div>
+</div>
+</div>
+
+<!-- CANDLE -->
+<div class="screen" id="s4">
+<div class="card">
+<div class="candle">
+<div class="flame" id="flame"></div>
+</div>
+<p>Blow the candle gently 🌬️</p>
+<button onclick="enableMic()">Blow 🎤</button>
+</div>
+</div>
+
+<!-- FINAL -->
+<div class="screen" id="s5">
+<div class="card">
+<h2>🎉 Happy Birthday 🎉</h2>
+<p id="note"></p>
+<p style="font-size:22px">🌻🍫✨🎈💛</p>
+<button onclick="go(2)">⬅ Back</button>
+</div>
+</div>
+
+<script>
+let selectedNote="";
+let petalInterval;
+const music=document.getElementById("bgMusic");
+
+function start(){
+music.muted=false;
+music.play();
+go(2);
+}
+
+function go(n){
+document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+document.getElementById("s"+n).classList.add("active");
+}
+
+/* NAME UPDATED */
+const notes={
+india:`<b>Nimra 💕</b><br><br>Janmadin Mubarak 🌻<br>Wishing you endless soft smiles and warm moments 💛`,
+saudi:`<b>Nimra 💕</b><br><br>عيد ميلاد سعيد 🌻<br>May your year shine beautifully ✨`,
+japan:`<b>Nimra 💕</b><br><br>お誕生日おめでとう 🌻<br>Stay happy and glowing always 💕`,
+korea:`<b>Nimra 💕</b><br><br>생일 축하해요 🌻<br>May your heart stay golden 💛`
+};
+
+function travel(c){
+selectedNote=notes[c];
+go(4);
+}
+
+/* 🎤 BLOW DETECTION */
+let audioContext, analyser, dataArray, blowing=false;
+
+async function enableMic(){
+try{
+const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+audioContext=new (window.AudioContext||window.webkitAudioContext)();
+analyser=audioContext.createAnalyser();
+const mic=audioContext.createMediaStreamSource(stream);
+mic.connect(analyser);
+analyser.fftSize=256;
+dataArray=new Uint8Array(analyser.frequencyBinCount);
+detectBlow();
+}catch{
+extinguish(); // fallback if mic denied
+}
+}
+
+function detectBlow(){
+if(blowing) return;
+analyser.getByteFrequencyData(dataArray);
+let volume=dataArray.reduce((a,b)=>a+b)/dataArray.length;
+if(volume>45){
+blowing=true;
+extinguish();
+}
+requestAnimationFrame(detectBlow);
+}
+
+function extinguish(){
+document.getElementById("flame").classList.add("hidden");
+
+confetti({
+particleCount:180,
+spread:120,
+colors:['#ffd84d','#f4b400','#ff9800']
+});
+
+document.getElementById("note").innerHTML=selectedNote;
+go(5);
+startPetals();
+}
+
+function startPetals(){
+petalInterval=setInterval(()=>{
+let p=document.createElement("div");
+p.className="petal";
+p.innerHTML="🌻";
+p.style.left=Math.random()*100+"vw";
+p.style.animationDuration=6+Math.random()*4+"s";
+document.body.appendChild(p);
+setTimeout(()=>p.remove(),10000);
+},450);
+}
+</script>
+
+</body>
+</html>

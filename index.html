@@ -2,302 +2,260 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Happy Birthday 💛</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday 🌙✨</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <style>
 :root{
-  --bg: linear-gradient(to top, #ffcc33, #fff6cc);
-  --card: rgba(255,255,255,0.9);
+  --bg-light:#fff0f6;
+  --bg-dark:#0f0f14;
+  --pink:#ff4da6;
 }
 
 body{
   margin:0;
-  font-family:Poppins,system-ui;
-  background:var(--bg);
+  font-family:'Poppins',sans-serif;
   overflow:hidden;
-  color:#3b2f00;
+  transition:0.5s;
 }
 
-/* SUNRISE */
-.sunrise{
-  position:fixed;
-  bottom:-160px;
-  left:50%;
-  transform:translateX(-50%);
-  width:320px;
-  height:320px;
-  background:radial-gradient(circle,#fff6a3,#ffb300);
-  border-radius:50%;
-  animation:sunrise 8s ease forwards;
-  z-index:-1;
-}
-@keyframes sunrise{to{bottom:40%;}}
+.light{background:#fff0f6;color:#111;}
+.dark{background:#0f0f14;color:#fff;}
 
-/* SCREENS */
-.screen{
+section{
   position:absolute;
-  inset:0;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  flex-direction:column;
-  padding:20px;
-}
-.screen.active{display:flex}
-
-.card{
-  background:var(--card);
-  padding:28px;
-  border-radius:30px;
-  max-width:460px;
   width:100%;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
   text-align:center;
-  box-shadow:0 25px 60px rgba(0,0,0,.18);
+  transition:0.8s;
 }
+
+.hidden{opacity:0;pointer-events:none;}
+.visible{opacity:1;pointer-events:auto;}
 
 button{
-  padding:14px 30px;
+  padding:12px 25px;
   border:none;
-  border-radius:40px;
-  background:linear-gradient(135deg,#ffd84d,#f4b400);
+  border-radius:30px;
+  background:var(--pink);
+  color:white;
   font-size:16px;
   cursor:pointer;
-  margin-top:18px;
+  margin-top:20px;
 }
 
-/* COUNTRY */
-.country{
-  margin:12px 0;
-  padding:15px;
-  border-radius:30px;
-  background:#fff1b8;
-  cursor:pointer;
+.theme-toggle{
+  position:fixed;
+  top:15px;
+  right:15px;
+  z-index:999;
 }
 
-/* PLANE */
-.plane{
-  position:absolute;
-  font-size:60px;
-  left:-80px;
-  top:42%;
-  animation:fly 3s ease-out forwards;
-}
-@keyframes fly{
-  70%{transform:translateX(80vw) translateY(-18px)}
-  100%{transform:translateX(95vw) translateY(10px)}
+canvas{display:block;}
+
+.note{
+  max-width:600px;
+  font-size:18px;
+  line-height:1.6;
+  margin-top:20px;
 }
 
-.cloudPuff{
-  position:absolute;
-  font-size:40px;
-  bottom:38%;
-  opacity:0;
-  animation:puff 1.2s ease forwards;
-}
-@keyframes puff{
-  to{opacity:1;transform:scale(1.8);opacity:0;}
-}
-
-/* CANDLE */
-.candle{
-  width:90px;height:150px;
-  background:linear-gradient(#ffe680,#ffc933);
-  border-radius:18px;
-  position:relative;
-  margin:22px auto;
-}
-.flame{
-  width:22px;height:34px;
-  background:radial-gradient(circle,#fff,#ff9800);
-  border-radius:50%;
-  position:absolute;
-  top:-34px;
-  left:34px;
-  transition:.1s;
-}
-.hidden{display:none}
-
-/* GOLD GLOW NAME */
-.glow{
-  font-size:20px;
-  font-weight:bold;
-  background:linear-gradient(45deg,#ffd84d,#ffb300,#fff6a3);
+.gold{
+  background:linear-gradient(90deg,#fff,#ffd700,#fff);
+  background-size:200%;
   -webkit-background-clip:text;
-  color:transparent;
+  -webkit-text-fill-color:transparent;
   animation:shine 3s linear infinite;
 }
+
 @keyframes shine{
   from{background-position:0%}
   to{background-position:200%}
 }
 
-/* PETALS */
+.candle{font-size:45px;margin-top:20px;}
+.flame{animation:flicker 0.2s infinite alternate;}
+@keyframes flicker{from{transform:scale(1);}to{transform:scale(1.2);}}
+
+/* petals */
 .petal{
   position:fixed;
-  top:-40px;
-  font-size:26px;
-  animation:fall linear forwards;
+  top:-10px;
+  font-size:18px;
+  animation:fall linear infinite;
 }
 @keyframes fall{
-  to{transform:translateY(110vh) rotate(360deg)}
+  to{transform:translateY(110vh) rotate(360deg);}
 }
 </style>
 </head>
+<body class="light">
 
-<body>
+<button class="theme-toggle" onclick="toggleTheme()">🌙</button>
 
-<div class="sunrise"></div>
+<section id="intro" class="visible">
+  <h1>🎬 A Cinematic Surprise Awaits...</h1>
+  <button onclick="startGame()">Begin 🌍</button>
+</section>
 
-<!-- AUDIO -->
-<audio id="bgMusic" loop muted>
-<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_5b7a68a4ad.mp3">
-</audio>
+<section id="globeSection" class="hidden"></section>
 
-<audio id="planeSound">
-<source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_plane.mp3">
-</audio>
+<section id="ending" class="hidden">
+  <div class="note" id="note"></div>
+  <div class="candle">🕯️ <span class="flame">🔥</span></div>
+  <button onclick="goBack()">⬅ Back</button>
+</section>
 
-<!-- INTRO -->
-<div class="screen active" id="s1">
-<div class="card">
-<h2>Welcome 🌻</h2>
-<button onclick="start()">Begin</button>
-</div>
-</div>
-
-<!-- COUNTRY -->
-<div class="screen" id="s2">
-<div class="card">
-<h3>Choose a country 🌍</h3>
-<div class="country" onclick="travel('india')">🇮🇳 India</div>
-<div class="country" onclick="travel('saudi')">🇸🇦 Saudi Arabia</div>
-<div class="country" onclick="travel('japan')">🇯🇵 Japan</div>
-<div class="country" onclick="travel('korea')">🇰🇷 South Korea</div>
-</div>
-</div>
-
-<!-- PLANE -->
-<div class="screen" id="s3">
-<div class="plane">✈️</div>
-</div>
-
-<!-- CANDLE -->
-<div class="screen" id="s4">
-<div class="card">
-<div class="candle">
-<div class="flame" id="flame"></div>
-</div>
-<p>Blow gently 🌬️</p>
-<button onclick="enableMic()">Blow 🎤</button>
-</div>
-</div>
-
-<!-- FINAL -->
-<div class="screen" id="s5">
-<div class="card">
-<h2>🎉 Happy Birthday 🎉</h2>
-<p id="note"></p>
-<button onclick="go(2)">Back</button>
-</div>
-</div>
+<audio id="jetSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_2e3bca0b3f.mp3"></audio>
 
 <script>
-let selectedNote="";
-let petalInterval;
-const music=document.getElementById("bgMusic");
-const planeSound=document.getElementById("planeSound");
-
-function start(){
-music.muted=false;
-music.play();
-go(2);
+function toggleTheme(){
+  document.body.classList.toggle("dark");
+  document.body.classList.toggle("light");
 }
 
-function go(n){
-document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-document.getElementById("s"+n).classList.add("active");
+function startGame(){
+  intro.classList.replace("visible","hidden");
+  globeSection.classList.replace("hidden","visible");
 }
 
-const notes={
-india:`<div class="glow">Nimra 💕</div><br>Janmadin Mubarak 🌻`,
-saudi:`<div class="glow">Nimra 💕</div><br>عيد ميلاد سعيد 🌻`,
-japan:`<div class="glow">Nimra 💕</div><br>お誕生日おめでとう 🌻`,
-korea:`<div class="glow">Nimra 💕</div><br>생일 축하해요 🌻`
+/* THREE JS GLOBE */
+let scene=new THREE.Scene();
+let camera=new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,1000);
+let renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+globeSection.appendChild(renderer.domElement);
+
+let geometry=new THREE.SphereGeometry(2,64,64);
+let texture=new THREE.TextureLoader().load("https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg");
+let material=new THREE.MeshStandardMaterial({map:texture});
+let globe=new THREE.Mesh(geometry,material);
+scene.add(globe);
+
+let light=new THREE.PointLight(0xffffff,1);
+light.position.set(5,3,5);
+scene.add(light);
+
+camera.position.z=5;
+
+function animate(){
+  requestAnimationFrame(animate);
+  globe.rotation.y+=0.002;
+  renderer.render(scene,camera);
+}
+animate();
+
+/* country markers */
+function latLongToVector3(lat,lon,radius){
+  let phi=(90-lat)*(Math.PI/180);
+  let theta=(lon+180)*(Math.PI/180);
+  return new THREE.Vector3(
+    -(radius*Math.sin(phi)*Math.cos(theta)),
+    radius*Math.cos(phi),
+    radius*Math.sin(phi)*Math.sin(theta)
+  );
+}
+
+let countries={
+  india:[20,78],
+  saudi:[24,45],
+  japan:[36,138],
+  korea:[36,128]
 };
 
-function travel(c){
-selectedNote=notes[c];
-go(3);
-planeSound.play();
-setTimeout(()=>{
-cloud();
-go(4);
-},3000);
+let markers={};
+
+for(let c in countries){
+  let pos=latLongToVector3(countries[c][0],countries[c][1],2.1);
+  let marker=new THREE.Mesh(
+    new THREE.SphereGeometry(0.08,16,16),
+    new THREE.MeshBasicMaterial({color:0xff4da6})
+  );
+  marker.position.copy(pos);
+  marker.userData.country=c;
+  scene.add(marker);
+  markers[c]=marker;
 }
 
-function cloud(){
-let puff=document.createElement("div");
-puff.className="cloudPuff";
-puff.innerHTML="☁️";
-document.body.appendChild(puff);
-setTimeout(()=>puff.remove(),1200);
+/* raycaster click */
+let raycaster=new THREE.Raycaster();
+let mouse=new THREE.Vector2();
+
+window.addEventListener("click",function(event){
+  mouse.x=(event.clientX/window.innerWidth)*2-1;
+  mouse.y=-(event.clientY/window.innerHeight)*2+1;
+  raycaster.setFromCamera(mouse,camera);
+  let intersects=raycaster.intersectObjects(Object.values(markers));
+  if(intersects.length>0){
+    travel(intersects[0].object.userData.country);
+  }
+});
+
+/* notes */
+const notes={
+india:`Happy Birthday 🌙✨<br><br>
+If birthdays were wishes... <span class="gold">Nimra 💕</span> 🌸🍫💖🌹<br><br>
+जन्मदिन मुबारक हो 🎉`,
+saudi:`عيد ميلاد سعيد 🎉🌸🍫 <span class="gold">Nimra 💕</span>`,
+japan:`お誕生日おめでとう 🎉🌸🍫 <span class="gold">Nimra 💕</span>`,
+korea:`생일 축하해요 🎉🌸🍫 <span class="gold">Nimra 💕</span>`
+};
+
+function travel(country){
+  globeSection.classList.replace("visible","hidden");
+  ending.classList.replace("hidden","visible");
+  jetSound.play();
+  document.getElementById("note").innerHTML=notes[country];
 }
 
-/* BLOW DETECTION + FLAME REACTION */
-let audioContext, analyser, dataArray, blowing=false;
+/* petals */
+setInterval(()=>{
+  let petal=document.createElement("div");
+  petal.className="petal";
+  petal.innerHTML="🌹";
+  petal.style.left=Math.random()*100+"vw";
+  petal.style.animationDuration=(5+Math.random()*5)+"s";
+  document.body.appendChild(petal);
+  setTimeout(()=>petal.remove(),10000);
+},400);
 
-async function enableMic(){
-try{
-const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-audioContext=new (window.AudioContext||window.webkitAudioContext)();
-analyser=audioContext.createAnalyser();
-const mic=audioContext.createMediaStreamSource(stream);
-mic.connect(analyser);
-analyser.fftSize=256;
-dataArray=new Uint8Array(analyser.frequencyBinCount);
-detectBlow();
-}catch{
-extinguish();
-}
-}
+/* mic blow */
+let audioContext,analyser,dataArray;
+document.addEventListener("click",async()=>{
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    audioContext=new(window.AudioContext||window.webkitAudioContext)();
+    analyser=audioContext.createAnalyser();
+    const mic=audioContext.createMediaStreamSource(stream);
+    mic.connect(analyser);
+    analyser.fftSize=256;
+    dataArray=new Uint8Array(analyser.frequencyBinCount);
+    detectBlow();
+  }catch(e){}
+},{once:true});
 
 function detectBlow(){
-if(blowing) return;
-analyser.getByteFrequencyData(dataArray);
-let volume=dataArray.reduce((a,b)=>a+b)/dataArray.length;
-
-/* flame reacts before blowing */
-let flame=document.getElementById("flame");
-flame.style.transform=`scale(${1+volume/200})`;
-
-if(volume>50){
-blowing=true;
-extinguish();
-}
-requestAnimationFrame(detectBlow);
+  analyser.getByteFrequencyData(dataArray);
+  let volume=dataArray.reduce((a,b)=>a+b)/dataArray.length;
+  if(volume>45){
+    document.querySelector(".flame").style.opacity="0";
+    confetti({particleCount:150,spread:90,origin:{y:0.6}});
+  }
+  requestAnimationFrame(detectBlow);
 }
 
-function extinguish(){
-document.getElementById("flame").classList.add("hidden");
-confetti({particleCount:200,spread:120});
-document.getElementById("note").innerHTML=selectedNote;
-go(5);
-startPetals();
-}
-
-function startPetals(){
-petalInterval=setInterval(()=>{
-let p=document.createElement("div");
-p.className="petal";
-p.innerHTML="🌻";
-p.style.left=Math.random()*100+"vw";
-p.style.animationDuration=6+Math.random()*4+"s";
-document.body.appendChild(p);
-setTimeout(()=>p.remove(),10000);
-},450);
+function goBack(){
+  ending.classList.replace("visible","hidden");
+  globeSection.classList.replace("hidden","visible");
 }
 </script>
 

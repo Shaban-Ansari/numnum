@@ -10,36 +10,31 @@
 <style>
 :root{
   --bg: linear-gradient(to top, #ffcc33, #fff6cc);
-  --card: rgba(255,255,255,0.88);
-  --accent: #f4b400;
-  --text:#3b2f00;
+  --card: rgba(255,255,255,0.9);
 }
-
-*{ -webkit-tap-highlight-color: transparent; }
 
 body{
   margin:0;
   font-family:Poppins,system-ui;
   background:var(--bg);
-  color:var(--text);
   overflow:hidden;
+  color:#3b2f00;
 }
 
-/* 🌅 SUNRISE */
+/* SUNRISE */
 .sunrise{
   position:fixed;
   bottom:-160px;
   left:50%;
   transform:translateX(-50%);
-  width:300px;
-  height:300px;
+  width:320px;
+  height:320px;
   background:radial-gradient(circle,#fff6a3,#ffb300);
   border-radius:50%;
-  filter:blur(2px);
-  animation:sunrise 8s ease-in-out forwards;
+  animation:sunrise 8s ease forwards;
   z-index:-1;
 }
-@keyframes sunrise{ to{ bottom:40%; } }
+@keyframes sunrise{to{bottom:40%;}}
 
 /* SCREENS */
 .screen{
@@ -56,34 +51,54 @@ body{
 .card{
   background:var(--card);
   padding:28px;
-  border-radius:28px;
+  border-radius:30px;
   max-width:460px;
   width:100%;
   text-align:center;
   box-shadow:0 25px 60px rgba(0,0,0,.18);
 }
 
-h2,h3{ color:#d18b00; }
-
 button{
   padding:14px 30px;
   border:none;
   border-radius:40px;
   background:linear-gradient(135deg,#ffd84d,#f4b400);
-  color:#3b2f00;
   font-size:16px;
   cursor:pointer;
   margin-top:18px;
-  box-shadow:0 10px 25px rgba(244,180,0,.4);
 }
 
+/* COUNTRY */
 .country{
   margin:12px 0;
-  padding:15px 20px;
+  padding:15px;
   border-radius:30px;
   background:#fff1b8;
   cursor:pointer;
-  font-weight:500;
+}
+
+/* PLANE */
+.plane{
+  position:absolute;
+  font-size:60px;
+  left:-80px;
+  top:42%;
+  animation:fly 3s ease-out forwards;
+}
+@keyframes fly{
+  70%{transform:translateX(80vw) translateY(-18px)}
+  100%{transform:translateX(95vw) translateY(10px)}
+}
+
+.cloudPuff{
+  position:absolute;
+  font-size:40px;
+  bottom:38%;
+  opacity:0;
+  animation:puff 1.2s ease forwards;
+}
+@keyframes puff{
+  to{opacity:1;transform:scale(1.8);opacity:0;}
 }
 
 /* CANDLE */
@@ -101,10 +116,23 @@ button{
   position:absolute;
   top:-34px;
   left:34px;
-  animation:flicker .15s infinite;
+  transition:.1s;
 }
-@keyframes flicker{50%{transform:scale(.85)}}
 .hidden{display:none}
+
+/* GOLD GLOW NAME */
+.glow{
+  font-size:20px;
+  font-weight:bold;
+  background:linear-gradient(45deg,#ffd84d,#ffb300,#fff6a3);
+  -webkit-background-clip:text;
+  color:transparent;
+  animation:shine 3s linear infinite;
+}
+@keyframes shine{
+  from{background-position:0%}
+  to{background-position:200%}
+}
 
 /* PETALS */
 .petal{
@@ -112,7 +140,6 @@ button{
   top:-40px;
   font-size:26px;
   animation:fall linear forwards;
-  pointer-events:none;
 }
 @keyframes fall{
   to{transform:translateY(110vh) rotate(360deg)}
@@ -124,15 +151,19 @@ button{
 
 <div class="sunrise"></div>
 
+<!-- AUDIO -->
 <audio id="bgMusic" loop muted>
 <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_5b7a68a4ad.mp3">
+</audio>
+
+<audio id="planeSound">
+<source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_plane.mp3">
 </audio>
 
 <!-- INTRO -->
 <div class="screen active" id="s1">
 <div class="card">
 <h2>Welcome 🌻</h2>
-<p>A warm sunrise, just for you</p>
 <button onclick="start()">Begin</button>
 </div>
 </div>
@@ -148,13 +179,18 @@ button{
 </div>
 </div>
 
+<!-- PLANE -->
+<div class="screen" id="s3">
+<div class="plane">✈️</div>
+</div>
+
 <!-- CANDLE -->
 <div class="screen" id="s4">
 <div class="card">
 <div class="candle">
 <div class="flame" id="flame"></div>
 </div>
-<p>Blow the candle gently 🌬️</p>
+<p>Blow gently 🌬️</p>
 <button onclick="enableMic()">Blow 🎤</button>
 </div>
 </div>
@@ -164,8 +200,7 @@ button{
 <div class="card">
 <h2>🎉 Happy Birthday 🎉</h2>
 <p id="note"></p>
-<p style="font-size:22px">🌻🍫✨🎈💛</p>
-<button onclick="go(2)">⬅ Back</button>
+<button onclick="go(2)">Back</button>
 </div>
 </div>
 
@@ -173,6 +208,7 @@ button{
 let selectedNote="";
 let petalInterval;
 const music=document.getElementById("bgMusic");
+const planeSound=document.getElementById("planeSound");
 
 function start(){
 music.muted=false;
@@ -185,20 +221,32 @@ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
 document.getElementById("s"+n).classList.add("active");
 }
 
-/* NAME UPDATED */
 const notes={
-india:`<b>Nimra 💕</b><br><br>Janmadin Mubarak 🌻<br>Wishing you endless soft smiles and warm moments 💛`,
-saudi:`<b>Nimra 💕</b><br><br>عيد ميلاد سعيد 🌻<br>May your year shine beautifully ✨`,
-japan:`<b>Nimra 💕</b><br><br>お誕生日おめでとう 🌻<br>Stay happy and glowing always 💕`,
-korea:`<b>Nimra 💕</b><br><br>생일 축하해요 🌻<br>May your heart stay golden 💛`
+india:`<div class="glow">Nimra 💕</div><br>Janmadin Mubarak 🌻`,
+saudi:`<div class="glow">Nimra 💕</div><br>عيد ميلاد سعيد 🌻`,
+japan:`<div class="glow">Nimra 💕</div><br>お誕生日おめでとう 🌻`,
+korea:`<div class="glow">Nimra 💕</div><br>생일 축하해요 🌻`
 };
 
 function travel(c){
 selectedNote=notes[c];
+go(3);
+planeSound.play();
+setTimeout(()=>{
+cloud();
 go(4);
+},3000);
 }
 
-/* 🎤 BLOW DETECTION */
+function cloud(){
+let puff=document.createElement("div");
+puff.className="cloudPuff";
+puff.innerHTML="☁️";
+document.body.appendChild(puff);
+setTimeout(()=>puff.remove(),1200);
+}
+
+/* BLOW DETECTION + FLAME REACTION */
 let audioContext, analyser, dataArray, blowing=false;
 
 async function enableMic(){
@@ -212,7 +260,7 @@ analyser.fftSize=256;
 dataArray=new Uint8Array(analyser.frequencyBinCount);
 detectBlow();
 }catch{
-extinguish(); // fallback if mic denied
+extinguish();
 }
 }
 
@@ -220,7 +268,12 @@ function detectBlow(){
 if(blowing) return;
 analyser.getByteFrequencyData(dataArray);
 let volume=dataArray.reduce((a,b)=>a+b)/dataArray.length;
-if(volume>45){
+
+/* flame reacts before blowing */
+let flame=document.getElementById("flame");
+flame.style.transform=`scale(${1+volume/200})`;
+
+if(volume>50){
 blowing=true;
 extinguish();
 }
@@ -229,13 +282,7 @@ requestAnimationFrame(detectBlow);
 
 function extinguish(){
 document.getElementById("flame").classList.add("hidden");
-
-confetti({
-particleCount:180,
-spread:120,
-colors:['#ffd84d','#f4b400','#ff9800']
-});
-
+confetti({particleCount:200,spread:120});
 document.getElementById("note").innerHTML=selectedNote;
 go(5);
 startPetals();
